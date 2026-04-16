@@ -1,0 +1,299 @@
+# Cameron The Caddie — PWA Deployment Guide
+
+Follow these steps exactly and your app will be live on the internet and installable on any phone in under 30 minutes. No coding knowledge needed.
+
+---
+
+## What you'll need
+- A free account at **netlify.com**
+- A free account at **github.com** (optional but recommended)
+- The files listed below, copy-pasted into the correct structure
+
+---
+
+## Step 1 — Create the project folder
+
+On your computer, create a folder called `cameronthecaddie`. Inside it, create this exact structure:
+
+```
+cameronthecaddie/
+├── public/
+│   ├── index.html
+│   ├── manifest.json
+│   └── icons/
+│       ├── icon-192.png
+│       └── icon-512.png
+├── src/
+│   ├── index.js
+│   ├── App.js
+│   └── serviceWorker.js
+├── package.json
+└── .gitignore
+```
+
+---
+
+## Step 2 — Create each file
+
+Copy the content below into each file exactly as shown.
+
+---
+
+### `public/index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0d2d52" />
+    <meta name="description" content="Golf travel guidance from Cameron The Caddie, based at Cabot Highlands, Inverness." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CTC" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/icons/icon-192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>Cameron The Caddie</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+```
+
+---
+
+### `public/manifest.json`
+
+```json
+{
+  "short_name": "CTC",
+  "name": "Cameron The Caddie",
+  "description": "Golf travel guidance from Cameron The Caddie, based at Cabot Highlands, Inverness.",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d2d52",
+  "theme_color": "#0d2d52"
+}
+```
+
+---
+
+### `public/icons/`
+
+You need two icon image files here:
+- `icon-192.png` — 192×192 pixels
+- `icon-512.png` — 512×512 pixels
+
+**How to make them:**
+1. Go to **favicon.io** or **realfavicongenerator.net**
+2. Upload your CTC logo (save it from cameronthecaddie.com first — right-click the logo → Save Image)
+3. Download the generated icons and rename them `icon-192.png` and `icon-512.png`
+4. Place them in `public/icons/`
+
+---
+
+### `package.json`
+
+```json
+{
+  "name": "cameronthecaddie",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": ["react-app"]
+  },
+  "browserslist": {
+    "production": [">0.2%", "not dead", "not op_mini all"],
+    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+  }
+}
+```
+
+---
+
+### `.gitignore`
+
+```
+node_modules/
+build/
+.DS_Store
+.env
+```
+
+---
+
+### `src/index.js`
+
+```javascript
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import * as serviceWorker from './serviceWorker';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<React.StrictMode><App /></React.StrictMode>);
+
+serviceWorker.register();
+```
+
+---
+
+### `src/serviceWorker.js`
+
+```javascript
+const isLocalhost = Boolean(
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '[::1]' ||
+  window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+);
+
+export function register(config) {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
+      if (isLocalhost) {
+        checkValidServiceWorker(swUrl, config);
+      } else {
+        registerValidSW(swUrl, config);
+      }
+    });
+  }
+}
+
+function registerValidSW(swUrl, config) {
+  navigator.serviceWorker.register(swUrl).then(registration => {
+    registration.onupdatefound = () => {
+      const installingWorker = registration.installing;
+      if (!installingWorker) return;
+      installingWorker.onstatechange = () => {
+        if (installingWorker.state === 'installed') {
+          if (navigator.serviceWorker.controller) {
+            if (config && config.onUpdate) config.onUpdate(registration);
+          } else {
+            if (config && config.onSuccess) config.onSuccess(registration);
+          }
+        }
+      };
+    };
+  }).catch(error => console.error('Error during service worker registration:', error));
+}
+
+function checkValidServiceWorker(swUrl, config) {
+  fetch(swUrl, { headers: { 'Service-Worker': 'script' } }).then(response => {
+    const contentType = response.headers.get('content-type');
+    if (response.status === 404 || (contentType && contentType.indexOf('javascript') === -1)) {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.unregister().then(() => window.location.reload());
+      });
+    } else {
+      registerValidSW(swUrl, config);
+    }
+  }).catch(() => console.log('No internet connection. App is running in offline mode.'));
+}
+
+export function unregister() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(registration => registration.unregister());
+  }
+}
+```
+
+---
+
+### `src/App.js`
+
+Copy the **entire contents** of the Cameron The Caddie app artifact (the React code) into this file.
+
+---
+
+## Step 3 — Deploy to Netlify (the easy way — no terminal needed)
+
+1. Go to **netlify.com** and sign up for a free account
+2. Click **"Add new site"** → **"Deploy manually"**
+3. You need to build the app first. The easiest way:
+   - Install **Node.js** from nodejs.org (free, one-time)
+   - Open Terminal (Mac) or Command Prompt (Windows)
+   - Navigate to your project folder: `cd path/to/cameronthecaddie`
+   - Run: `npm install` (wait ~2 minutes)
+   - Run: `npm run build` (wait ~1 minute)
+   - This creates a `build/` folder
+4. Back on Netlify, **drag and drop the `build/` folder** onto the Netlify deploy area
+5. Netlify gives you a live URL like `random-name.netlify.app`
+
+**To get a custom domain** (e.g. `app.cameronthecaddie.com`):
+- In Netlify → Site Settings → Domain Management → Add custom domain
+- Add `app.cameronthecaddie.com` (or any subdomain you choose)
+- In your Wix domain settings, add a CNAME record pointing `app` to your Netlify URL
+
+---
+
+## Step 4 — Install on your phone
+
+**iPhone (Safari):**
+1. Open Safari and go to your Netlify URL
+2. Tap the **Share** button (box with arrow pointing up)
+3. Scroll down and tap **"Add to Home Screen"**
+4. Tap **"Add"**
+5. The app icon appears on your home screen — tap it and it opens full-screen with no browser bar
+
+**Android (Chrome):**
+1. Open Chrome and go to your Netlify URL
+2. Tap the **three-dot menu** (top right)
+3. Tap **"Add to Home Screen"** or **"Install App"**
+4. Tap **"Install"**
+
+---
+
+## Step 5 — Share with clients
+
+Once deployed, simply send clients your Netlify URL (or custom domain). They can:
+- Browse it in any browser like a normal website
+- Install it to their home screen following the steps above
+- Use it offline once installed (content is cached by the service worker)
+
+---
+
+## Updating the app in future
+
+Whenever you want to update content:
+1. Edit `src/App.js`
+2. Run `npm run build` again
+3. Drag the new `build/` folder to Netlify → **"Deploys"** tab → **"Drag and drop"**
+
+Netlify updates the live site instantly.
+
+---
+
+## Need help?
+
+If you get stuck at any step, message **camthecaddie@gmail.com** from your own device, or bring this guide to any local tech shop — the steps are standard and any developer will recognise them immediately.
